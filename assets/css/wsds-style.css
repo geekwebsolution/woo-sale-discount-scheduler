@@ -1,0 +1,27 @@
+ .wsds_options_panel input[type=text].wsds_st_date, .wsds_options_panel input[type=text].wsds_end_date
+{
+width: 200px;	
+}
+.wsds_options_panel .wsds_options_group p input[type=text]{
+   width: auto; 
+   margin: 2px;
+  
+}
+.wsds_options_panel span{
+	float: left;
+	margin-left: 3px; 
+	margin-right: 3px;
+}
+p.form-field.wsds_note {
+    color: red;
+}
+li.wsds-schedule-sale-tab_tab a::before {
+	
+    content: "\f469" !important;
+}
+.wsds_options_panel .wpass_options_group p .wsds_enhanced_select{
+	width:auto;
+}
+.wsds_widget_limit{
+	width: 45px;
+}
