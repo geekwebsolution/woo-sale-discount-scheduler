@@ -3,14 +3,14 @@
 Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
-Version: 1.6
-WC tested up to: 7.7.0
+Version: 1.7
+WC tested up to: 8.2.2
 Author URI: https://geekcodelab.com/
 */
 
 if(!defined('ABSPATH')) exit;
 
-define("WSDS_BUILD",1.6);
+define("WSDS_BUILD",1.7);
 
 if(!defined("WSDS_PLUGIN_DIR_PATH"))
 	
@@ -367,57 +367,66 @@ function wsds_schedule_sale_discount_admin_footer_function() {
 add_action('wp_footer', 'wsds_schedule_sale_discount_front_footer_function');
 function wsds_schedule_sale_discount_front_footer_function() {
 	?>
-		<script>
-			jQuery(".wsds_countdown_start").each(function() {
-				var start_time = jQuery(this).attr('data-start');
-				var product_id = jQuery(this).attr('data-product');
-				var interval1 = setInterval(function() {
-					var today = new Date();
-					var str = today.toGMTString();
-					var now_timestamp = Date.parse(str) / 1000;
-					var remain_start_time = start_time - now_timestamp;
-					if (remain_start_time > 0) {
-						jQuery('#wsds_countdown_start_' + product_id + ' ul').html(wsds_convertMS(remain_start_time + '000'));
-						
-					} else {
-						clearInterval(interval1);
-						document.location.reload(true);
-						}
-				}, 1000);
-				
-			});
-			
-			jQuery(".wsds_countdown_end").each(function() {
-				var end_time = jQuery(this).attr('data-end');
-				var product_id = jQuery(this).attr('data-product');
-				var interval2 = setInterval(function() {
-					var today = new Date();
-					var str = today.toGMTString();
-					var now_timestamp = Date.parse(str) / 1000;
-					var remain_end_time = end_time - now_timestamp;
-					if (remain_end_time > 0) {
-						jQuery('#wsds_countdown_end_' + product_id + ' ul').html(wsds_convertMS(remain_end_time + '000'));
-						
-					} else {
-						clearInterval(interval2);
-						document.location.reload();
-						
+	<script>
+		jQuery(".wsds_countdown_start").each(function() {
+			var start_time = jQuery(this).attr('data-start');
+			var product_id = jQuery(this).attr('data-product');
+			var interval1 = setInterval(function() {
+				var today = new Date();
+				var str = today.toGMTString();
+				var now_timestamp = Date.parse(str) / 1000;
+				var remain_start_time = start_time - now_timestamp;
+				if (remain_start_time > 0) {
+					jQuery('#wsds_countdown_start_' + product_id + ' ul').html(wsds_convertMS(remain_start_time + '000'));
+					
+				} else {
+					clearInterval(interval1);
+					document.location.reload(true);
 					}
-				}, 1000);
-				
-			});
-			function wsds_convertMS(ms) {
-				var d, h, m, s;
-				s = Math.floor(ms / 1000);
-				m = Math.floor(s / 60);
-				s = s % 60;
-				h = Math.floor(m / 60);
-				m = m % 60;
-				d = Math.floor(h / 24);
-				h = h % 24;
-				// return { d: d, h: h, m: m, s: s };
-				var html = '<li><div><span class="wsds_count_digit">' + d + '</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">' + h + '</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">' + m + '</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">' + s + '</span><span class="wsds_count_lable">Sec</span></div></li>'
-				return html;
-			};
-		</script>
-		<?php }
+			}, 1000);
+			
+		});
+		
+		jQuery(".wsds_countdown_end").each(function() {
+			var end_time = jQuery(this).attr('data-end');
+			var product_id = jQuery(this).attr('data-product');
+			var interval2 = setInterval(function() {
+				var today = new Date();
+				var str = today.toGMTString();
+				var now_timestamp = Date.parse(str) / 1000;
+				var remain_end_time = end_time - now_timestamp;
+				if (remain_end_time > 0) {
+					jQuery('#wsds_countdown_end_' + product_id + ' ul').html(wsds_convertMS(remain_end_time + '000'));
+					
+				} else {
+					clearInterval(interval2);
+					document.location.reload();
+					
+				}
+			}, 1000);
+			
+		});
+		function wsds_convertMS(ms) {
+			var d, h, m, s;
+			s = Math.floor(ms / 1000);
+			m = Math.floor(s / 60);
+			s = s % 60;
+			h = Math.floor(m / 60);
+			m = m % 60;
+			d = Math.floor(h / 24);
+			h = h % 24;
+			// return { d: d, h: h, m: m, s: s };
+			var html = '<li><div><span class="wsds_count_digit">' + d + '</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">' + h + '</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">' + m + '</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">' + s + '</span><span class="wsds_count_lable">Sec</span></div></li>'
+			return html;
+		};
+	</script>
+<?php }
+/**
+ * Added HPOS support for woocommerce
+ */
+add_action( 'before_woocommerce_init', 'wsds_before_woocommerce_init' );
+function wsds_before_woocommerce_init() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+}
