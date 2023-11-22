@@ -5,7 +5,7 @@ Tags:pre schedule sale discount countdown, on schedule sale discount countdown, 
 Requires PHP: 5.2.4
 Requires at least: 3.0.1
 Tested up to: 6.4.1
-WC tested up to: 8.2.2
+WC tested up to: 8.3.0
 Stable tag: 1.7
 
 This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.

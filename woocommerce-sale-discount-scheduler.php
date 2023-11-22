@@ -4,7 +4,7 @@ Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
 Version: 1.7
-WC tested up to: 8.2.2
+WC tested up to: 8.3.0
 Author URI: https://geekcodelab.com/
 */
 
@@ -39,19 +39,31 @@ function wsds_front_style_include() {
 
 add_action( 'wp_enqueue_scripts', 'wsds_front_style_include' );
 
-add_action('admin_init', 'wsds_manage_scheduler');
- 
-register_activation_hook( __FILE__, 'wsds_plugin_active' );
-
-function wsds_plugin_active(){
-	
-	$error='required <b>woocommerce</b> plugin.';	
-	if ( !class_exists( 'WooCommerce' ) ) {
-		
-	   die('Plugin NOT activated: ' . $error);
-	   
+/** Trigger an admin notice if WooCommerce is not installed.*/
+if ( ! function_exists( 'wsds_install_woocommerce_admin_notice' ) ) {
+	function wsds_install_woocommerce_admin_notice() { ?>
+		<div class="error">
+			<p>
+				<?php
+				// translators: %s is the plugin name.
+				echo esc_html( sprintf( __( '%s is enabled but not effective. It requires WooCommerce in order to work.' ), 'Woocommerce Sale Discount Scheduler' ) );
+				?>
+			</p>
+		</div>
+		<?php
 	}
 }
+function wsds_woocommerce_constructor() {
+    // Check WooCommerce installation
+	if ( ! function_exists( 'WC' ) ) {
+		add_action( 'admin_notices', 'wsds_install_woocommerce_admin_notice' );
+		return;
+	}
+
+}
+add_action( 'plugins_loaded', 'wsds_woocommerce_constructor' );
+
+add_action('admin_init', 'wsds_manage_scheduler');
 function wsds_manage_scheduler() {
 	
     if ( is_admin() ) {
