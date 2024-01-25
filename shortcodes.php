@@ -89,7 +89,7 @@ function wsds_schedule_sale_discount_shortcode($atts)
 		 <ul class ="products columns-<?php echo $columns; ?>"><?php
 			while ( $loop->have_posts() ) : $loop->the_post();
 				
-				woocommerce_get_template_part( 'content', 'product' );
+			wc_get_template_part( 'content', 'product' );
 				
 			endwhile;
 			?> </ul><?php

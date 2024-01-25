@@ -12,8 +12,16 @@ width: 200px;
 	margin-left: 3px; 
 	margin-right: 3px;
 }
+.wsds_show_countdown input[type="checkbox"] {
+    float: left;
+    margin-left: 3px;
+    margin-right: 3px;
+}
 p.form-field.wsds_note {
     color: red;
+}
+span.wsds_note {
+	font-size: 13px;
 }
 li.wsds-schedule-sale-tab_tab a::before {
 	
