@@ -3,14 +3,14 @@
 Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
-Version: 1.7
-WC tested up to: 8.3.0
+Version: 1.8
+WC tested up to: 8.5.1
 Author URI: https://geekcodelab.com/
 */
 
 if(!defined('ABSPATH')) exit;
 
-define("WSDS_BUILD",1.7);
+define("WSDS_BUILD",1.8);
 
 if(!defined("WSDS_PLUGIN_DIR_PATH"))
 	
@@ -39,31 +39,19 @@ function wsds_front_style_include() {
 
 add_action( 'wp_enqueue_scripts', 'wsds_front_style_include' );
 
-/** Trigger an admin notice if WooCommerce is not installed.*/
-if ( ! function_exists( 'wsds_install_woocommerce_admin_notice' ) ) {
-	function wsds_install_woocommerce_admin_notice() { ?>
-		<div class="error">
-			<p>
-				<?php
-				// translators: %s is the plugin name.
-				echo esc_html( sprintf( __( '%s is enabled but not effective. It requires WooCommerce in order to work.' ), 'Woocommerce Sale Discount Scheduler' ) );
-				?>
-			</p>
-		</div>
-		<?php
-	}
-}
-function wsds_woocommerce_constructor() {
-    // Check WooCommerce installation
-	if ( ! function_exists( 'WC' ) ) {
-		add_action( 'admin_notices', 'wsds_install_woocommerce_admin_notice' );
-		return;
-	}
-
-}
-add_action( 'plugins_loaded', 'wsds_woocommerce_constructor' );
-
 add_action('admin_init', 'wsds_manage_scheduler');
+
+register_activation_hook( __FILE__, 'wsds_plugin_active' );
+
+function wsds_plugin_active(){
+	
+	$error='required <b>woocommerce</b> plugin.';	
+	if ( !class_exists( 'WooCommerce' ) ) {
+		
+	   die('Plugin NOT activated: ' . $error);
+	   
+	}
+} 
 function wsds_manage_scheduler() {
 	
     if ( is_admin() ) {
@@ -72,9 +60,9 @@ function wsds_manage_scheduler() {
 		
 		if(in_array("administrator",$current_roles))
 		{
-			
-			include( WSDS_PLUGIN_DIR_PATH .'options.php');
-			
+
+			include( WSDS_PLUGIN_DIR_PATH .'options.php');	
+
 		}       
     }
 }
@@ -120,7 +108,7 @@ function wsds_return_price($price, $product) {
 	}
 	return $price;
 }
-add_filter('woocommerce_product_get_price', 'wsds_return_price', 10, 2);
+add_filter('woocommerce_product_get_price', 'wsds_return_price', PHP_INT_MAX, 2);
 function wsds_get_discount_price() {
 	$price = "";
     global $post, $blog_id;
@@ -155,34 +143,45 @@ function wsds_shop_sale_start_countdown() {
 	$sale_price=wsds_get_discount_price();
 	$currency_symbol=get_woocommerce_currency_symbol();	
 	if (in_array($product_id, $product_ids))
-	{ 
-		$start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);   
+	{
+		$wsds_shop_loop_countdown = '';
 		$countdown=get_post_meta($product_id,'wsds_schedule_sale_start_countdown',true);   
-		$time_diffrent=$start_time-time();
-		$s = $time_diffrent;
-		$m = floor($s / 60);
-		$s = $s % 60;
-		$h = floor($m / 60);
-		$m = $m % 60;
-		$d = floor($h / 24);
-		$h = $h % 24;
-		$display_msg='';
-		if($sale_price<0)
-		{
-			$display_msg='<b>Discount Not Applied: Set Regular Price greater than discount price </b>';
-			$last_msg='';
+		if(metadata_exists('post',$product_id,'wsds_enable_countdown_on_shop_loop')) {
+			$wsds_shop_loop_countdown = get_post_meta($product_id,'wsds_enable_countdown_on_shop_loop',true);
+		}else{
+			if($countdown==1) {
+				$wsds_shop_loop_countdown = 'on';
+			}
 		}
-		else
-		{
-			$display_msg='This product will be sale in ';
-			$last_msg='after';
-		}
-		if ($time_diffrent > 0 && !empty($countdown))
-		{
-			echo '<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_shop">
-			
-			<span>'.$display_msg.''.$currency_symbol.''.$sale_price.' '.$last_msg.'</span>
-			<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+
+		if(!empty($countdown) && $wsds_shop_loop_countdown == 'on') {
+			$start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);
+			$time_diffrent=$start_time-time();
+			$s = $time_diffrent;
+			$m = floor($s / 60);
+			$s = $s % 60;
+			$h = floor($m / 60);
+			$m = $m % 60;
+			$d = floor($h / 24);
+			$h = $h % 24;
+			$display_msg='';
+			if($sale_price<0)
+			{
+				$display_msg='<b>Discount Not Applied: Set Regular Price greater than discount price </b>';
+				$last_msg='';
+			}
+			else
+			{
+				$display_msg='This product will be sale in ';
+				$last_msg='after';
+			}
+			if ($time_diffrent > 0)
+			{
+				echo '<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_shop">
+				
+				<span>'.$display_msg.''.$currency_symbol.''.$sale_price.' '.$last_msg.'</span>
+				<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+			}
 		}
 	}
 }
@@ -195,28 +194,39 @@ function wsds_shop_sale_ongoing_countdown() {
 	$sale_price=wsds_get_discount_price();
 	$currency_symbol=get_woocommerce_currency_symbol();	
 	if (in_array($product_id, $product_ids))
-	{ 
-		$end_time=get_post_meta($product_id,'wsds_schedule_sale_end_time',true);  
+	{
+		$wsds_shop_loop_countdown = '';
 		$countdown=get_post_meta($product_id,'wsds_schedule_sale_end_countdown',true);   
-		$time_diffrent=$end_time-time();
-		$s = $time_diffrent;
-		$m = floor($s / 60);
-		$s = $s % 60;
-		$h = floor($m / 60);
-		$m = $m % 60;
-		$d = floor($h / 24);
-		$h = $h % 24;
-		
-		if ($time_diffrent > 0 && !empty($countdown))
-		{
-			echo '<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_shop">
-			<span>Sale ends in</span>
-			<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+		if(metadata_exists('post',$product_id,'wsds_enable_countdown_on_shop_loop')) {
+			$wsds_shop_loop_countdown = get_post_meta($product_id,'wsds_enable_countdown_on_shop_loop',true);
+		}else{
+			if($countdown==1) {
+				$wsds_shop_loop_countdown = 'on';
+			}
+		}
+
+		if(!empty($countdown) && $wsds_shop_loop_countdown == 'on') {
+			$end_time=get_post_meta($product_id,'wsds_schedule_sale_end_time',true); 
+			$time_diffrent=$end_time-time();
+			$s = $time_diffrent;
+			$m = floor($s / 60);
+			$s = $s % 60;
+			$h = floor($m / 60);
+			$m = $m % 60;
+			$d = floor($h / 24);
+			$h = $h % 24;
+			
+			if ($time_diffrent > 0)
+			{
+				echo '<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_shop">
+				<span>Sale ends in</span>
+				<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+			}
 		}
 	}
 }
-add_action( 'woocommerce_single_product_summary', 'wsds_sale_start_countdown', 30 );
- 
+add_action( 'woocommerce_single_product_summary', 'wsds_sale_start_countdown', 30 ); 
+
 function wsds_sale_start_countdown() {
 	global $product;
 	global  $woocommerce;
@@ -225,74 +235,85 @@ function wsds_sale_start_countdown() {
 	$currency_symbol=get_woocommerce_currency_symbol();
 	$product_id=$product->get_id();	
 	if (in_array($product_id, $product_ids))
-	{ 
-		  $start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);  
-		  $countdown=get_post_meta($product_id,'wsds_schedule_sale_start_countdown',true);   
-		  $time_diffrent=$start_time-time();
-		  $s = $time_diffrent;
-		  $m = floor($s / 60);
-		  $s = $s % 60;
-		  $h = floor($m / 60);
-		  $m = $m % 60;
-		  $d = floor($h / 24);
-		  $h = $h % 24;
-		if($sale_price<0)
-		{
-			$display_msg='<b>Discount Not Applied: Set Regular Price greater than discount price </b>';
-			$last_msg='';
+	{
+		$wsds_single_product_countdown = '';
+		$countdown=get_post_meta($product_id,'wsds_schedule_sale_start_countdown',true); 
+		if(metadata_exists('post',$product_id,'wsds_enable_countdown_on_single_product')) {
+			$wsds_single_product_countdown = get_post_meta($product_id,'wsds_enable_countdown_on_single_product',true);
+		}else{
+			if($countdown==1) {
+				$wsds_single_product_countdown = 'on';
+			}
 		}
-		else
-		{
-			$display_msg='This product will be sale in ';
-			$last_msg='after';
-		}
-	if ($time_diffrent > 0 && !empty($countdown))
-		{
-			
-			 echo '
-			<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_single">
+
+		if(!empty($countdown) && $wsds_single_product_countdown == 'on') {
+			$start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);
+			$time_diffrent=$start_time-time();
+			$s = $time_diffrent;
+			$m = floor($s / 60);
+			$s = $s % 60;
+			$h = floor($m / 60);
+			$m = $m % 60;
+			$d = floor($h / 24);
+			$h = $h % 24;
+			if($sale_price<0)
+			{
+				$display_msg='<b>Discount Not Applied: Set Regular Price greater than discount price </b>';
+				$last_msg='';
+			}
+			else
+			{
+				$display_msg='This product will be sale in ';
+				$last_msg='after';
+			}
+			if ($time_diffrent > 0)
+			{
 				
-				<span>'.$display_msg.''.$currency_symbol.''.$sale_price.' '.$last_msg.'</span>
-				<ul>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$d.'</span>
-							<span class="wsds_count_lable">Days</span>
-							<div class="border-over"></div>
-							<div class="slice">
-								<div class="bar"></div>
+				echo '
+				<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_single">
+					
+					<span>'.$display_msg.''.$currency_symbol.''.$sale_price.' '.$last_msg.'</span>
+					<ul>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$d.'</span>
+								<span class="wsds_count_lable">Days</span>
+								<div class="border-over"></div>
+								<div class="slice">
+									<div class="bar"></div>
+								</div>
 							</div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$h.'</span>
-							<span class="wsds_count_lable">Hours</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$m.'</span>
-							<span class="wsds_count_lable">Min</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$s.'</span>
-							<span class="wsds_count_lable">Sec</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-				</ul>
-			</div>';
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$h.'</span>
+								<span class="wsds_count_lable">Hours</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$m.'</span>
+								<span class="wsds_count_lable">Min</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$s.'</span>
+								<span class="wsds_count_lable">Sec</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+					</ul>
+				</div>';
+			}
 		}
 	}
 	
 }
 add_action( 'woocommerce_single_product_summary', 'wsds_schedule_sale_ongoing_countdown', 30 );
- 
+
  
 function wsds_schedule_sale_ongoing_countdown() {
 	global $product;
@@ -303,57 +324,69 @@ function wsds_schedule_sale_ongoing_countdown() {
 	$product_id=$product->get_id();	
 	if (in_array($product_id, $product_ids))
 	{ 
-		  $end_time=get_post_meta($product_id,'wsds_schedule_sale_end_time',true);  
-		  $countdown=get_post_meta($product_id,'wsds_schedule_sale_end_countdown',true);   
-		  $time_diffrent=$end_time-time();
-		  $s = $time_diffrent;
-		  $m = floor($s / 60);
-		  $s = $s % 60;
-		  $h = floor($m / 60);
-		  $m = $m % 60;
-		  $d = floor($h / 24);
-		  $h = $h % 24;
-	if ($time_diffrent > 0 && !empty($countdown))
-		{
+		$wsds_single_product_countdown = '';
+		$countdown=get_post_meta($product_id,'wsds_schedule_sale_end_countdown',true);   
+		if(metadata_exists('post',$product_id,'wsds_enable_countdown_on_single_product')) {
+			$wsds_single_product_countdown = get_post_meta($product_id,'wsds_enable_countdown_on_single_product',true);
+		}else{
+			if($countdown==1) {
+				$wsds_single_product_countdown = 'on';
+			}
+		}
+
+		if(!empty($countdown) && $wsds_single_product_countdown == 'on') {
+			$end_time=get_post_meta($product_id,'wsds_schedule_sale_end_time',true);  
 			
-			 echo '
-			<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_single">
-				
-				<span>Sale ends in</span>
-				<ul>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$d.'</span>
-							<span class="wsds_count_lable">Days</span>
-							<div class="border-over"></div>
-							<div class="slice">
-								<div class="bar"></div>
+			$time_diffrent=$end_time-time();
+			$s = $time_diffrent;
+			$m = floor($s / 60);
+			$s = $s % 60;
+			$h = floor($m / 60);
+			$m = $m % 60;
+			$d = floor($h / 24);
+			$h = $h % 24;
+			if ($time_diffrent > 0)
+			{
+
+				echo '
+				<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_single">
+					
+					<span>Sale ends in</span>
+					<ul>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$d.'</span>
+								<span class="wsds_count_lable">Days</span>
+								<div class="border-over"></div>
+								<div class="slice">
+									<div class="bar"></div>
+								</div>
 							</div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$h.'</span>
-							<span class="wsds_count_lable">Hours</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$m.'</span>
-							<span class="wsds_count_lable">Min</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-					<li>
-						<div>
-							<span class="wsds_count_digit">'.$s.'</span>
-							<span class="wsds_count_lable">Sec</span>
-							<div class="border-over"></div>
-						</div>
-					</li>
-				</ul>
-			</div>';
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$h.'</span>
+								<span class="wsds_count_lable">Hours</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$m.'</span>
+								<span class="wsds_count_lable">Min</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+						<li>
+							<div>
+								<span class="wsds_count_digit">'.$s.'</span>
+								<span class="wsds_count_lable">Sec</span>
+								<div class="border-over"></div>
+							</div>
+						</li>
+					</ul>
+				</div>';
+			}
 		}
 	}
 }
@@ -394,7 +427,7 @@ function wsds_schedule_sale_discount_front_footer_function() {
 				} else {
 					clearInterval(interval1);
 					document.location.reload(true);
-					}
+				}
 			}, 1000);
 			
 		});

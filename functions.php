@@ -1,15 +1,5 @@
-<?php 
+<?php
 if(!defined('ABSPATH')) exit;
-
-if(!defined("WSDS_PLUGIN_DIR_PATH"))
-	
-	define("WSDS_PLUGIN_DIR_PATH",plugin_dir_path(__FILE__));
-	
-if(!defined("WSDS_PLUGIN_URL"))
-	
-	define("WSDS_PLUGIN_URL",plugins_url().'/'.basename(dirname(__FILE__)));
-	
-
 function wsds_get_post_meta_options()
 {
 	global $post_id;
@@ -17,7 +7,6 @@ function wsds_get_post_meta_options()
 }
 
 // Get Product IDs
-
 function wsds_get_schedule_product_list($status){
 	global $post;
 	$product_ids=array();
@@ -50,18 +39,12 @@ function wsds_get_schedule_product_list($status){
 // Success message
 function  success_option_msg_wsds($msg)
 {
-	
-	
-	return ' <div class="notice notice-success wsds-success-msg is-dismissible"><p>'. $msg . '</p></div>';		
-	
+	return ' <div class="notice notice-success wsds-success-msg is-dismissible"><p>'. $msg . '</p></div>';
 }
 
 // Error message
 function  failure_option_msg_wsds($msg)
 {
-
-	return '<div class="notice notice-error wsds-error-msg is-dismissible"><p>' . $msg . '</p></div>';		
-	
+	return '<div class="notice notice-error wsds-error-msg is-dismissible"><p>' . $msg . '</p></div>';
 }
-
 ?>

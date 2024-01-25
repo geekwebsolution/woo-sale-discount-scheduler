@@ -25,7 +25,26 @@ function wsds_product_schedule_sale_data_fields() {
 	$discount_type=get_post_meta($post_id,'wsds_schedule_sale_discount_type',true);   
 	$sale_price=get_post_meta($post_id,'wsds_schedule_sale_sale_price',true);   
 	$start_countdown=get_post_meta($post_id,'wsds_schedule_sale_start_countdown',true);   
-	$end_countdown=get_post_meta($post_id,'wsds_schedule_sale_end_countdown',true);   
+	$end_countdown=get_post_meta($post_id,'wsds_schedule_sale_end_countdown',true);
+
+	$wsds_shop_loop_countdown = '';
+	if(metadata_exists('post',$post_id,'wsds_enable_countdown_on_shop_loop')) {
+		$wsds_shop_loop_countdown = get_post_meta($post_id,'wsds_enable_countdown_on_shop_loop',true);
+	}else{
+		if($start_countdown==1 || $end_countdown==1) {
+			$wsds_shop_loop_countdown = 'on';
+		}
+	}
+
+	$wsds_single_product_countdown = '';
+	if(metadata_exists('post',$post_id,'wsds_enable_countdown_on_single_product')) {
+		$wsds_single_product_countdown = get_post_meta($post_id,'wsds_enable_countdown_on_single_product',true);
+	}else{
+		if($start_countdown==1 || $end_countdown==1) {
+			$wsds_single_product_countdown = 'on';
+		}
+	}
+
 	if(!empty($start_time))
 	{
 		$start_date=date('Y-m-d', $start_time);
@@ -106,6 +125,16 @@ function wsds_product_schedule_sale_data_fields() {
 		</select><span>CountDown is showing during sale</span>	
 			
 	</p>
+	<p class="form-field wsds_show_countdown">
+		<label for='wsds_enable_countdown_on_shop_loop'><?php _e( 'Shop loop Countdown', 'woocommerce' ); ?></label>
+		<input type="checkbox" name="wsds_enable_countdown_on_shop_loop" id="wsds_enable_countdown_on_shop_loop" value="on" <?php checked( $wsds_shop_loop_countdown, 'on' ); ?> />
+		<span>Enable</span>
+	</p>
+	<p class="form-field wsds_show_countdown">
+		<label for='wsds_enable_countdown_on_single_product'><?php _e( 'Single product Countdown', 'woocommerce' ); ?></label>
+		<input type="checkbox" name="wsds_enable_countdown_on_single_product" id="wsds_enable_countdown_on_single_product" value="on" <?php checked( $wsds_single_product_countdown, 'on' ); ?> />
+		<span>Enable</span>
+	</p>
 	<p class="form-field wsds_note">Note: Start time and End time will be on GMT, Current GMT time is: <?php echo date("Y-m-d @ H:i",$now); ?><br> Note: Sale price discount will be consider on regular price.  </p>
 	
   </div>
@@ -133,11 +162,13 @@ function wsds_save_discount_sale_schedule_data($post_id) {
 		$wsds_end_date=sanitize_text_field($_POST['wsds_end_date']);
 		if(!empty($_POST['wsds_end_hh'])) $wsds_end_hh=sanitize_text_field($_POST['wsds_end_hh']);
 		if(!empty($_POST['wsds_end_mn'])) $wsds_end_mn=sanitize_text_field($_POST['wsds_end_mn']);
+		if(isset($_POST['wsds_enable_countdown_on_shop_loop'])) $wsds_shop_loop_countdown=sanitize_text_field($_POST['wsds_enable_countdown_on_shop_loop']);
+		if(isset($_POST['wsds_enable_countdown_on_single_product'])) $wsds_single_product_countdown=sanitize_text_field($_POST['wsds_enable_countdown_on_single_product']);
 		$wsds_start_schedule_hook="wsds_start_shedule_sale_discount";
 		$wsds_end_schedule_hook="wsds_end_shedule_sale_discount";	
 		//Y-m-d H:i:s
 		$wsds_st_time=strtotime($wsds_st_date." ".$wsds_st_hh.":".$wsds_st_mn.":00"); 
-		//echo "start time".$wsds_st_time;
+		
 		$wsds_end_time=strtotime($wsds_end_date." ".$wsds_end_hh.":".$wsds_end_mn.":00");
 		if($wsds_status==1)
 		{			
@@ -156,7 +187,9 @@ function wsds_save_discount_sale_schedule_data($post_id) {
 			update_post_meta($post_id,'wsds_schedule_sale_discount_type',$wsds_discounttype);   
 			update_post_meta($post_id,'wsds_schedule_sale_sale_price',$wsds_saleprice);   
 			update_post_meta($post_id,'wsds_schedule_sale_start_countdown',$start_countdown);   
-			update_post_meta($post_id,'wsds_schedule_sale_end_countdown',$end_countdown);   
+			update_post_meta($post_id,'wsds_schedule_sale_end_countdown',$end_countdown);
+			update_post_meta($post_id,'wsds_enable_countdown_on_shop_loop',$wsds_shop_loop_countdown);
+			update_post_meta($post_id,'wsds_enable_countdown_on_single_product',$wsds_single_product_countdown);
 			
 			if($wsds_st_time > time())
 			{
@@ -164,9 +197,6 @@ function wsds_save_discount_sale_schedule_data($post_id) {
 			}
 			
 		}
-	
-	
-    
 } 
 
 add_action( 'woocommerce_process_product_meta', 'wsds_save_discount_sale_schedule_data'  );

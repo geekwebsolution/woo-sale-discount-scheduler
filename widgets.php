@@ -1,8 +1,6 @@
 <?php
-
 add_filter('body_class','wsds_widget_add_class');
-function wsds_widget_add_class($wsds_classes){
-
+function wsds_widget_add_class($wsds_classes) {
 		if ( is_active_widget(false, false, 'woocommerce_sale_discount_products', true) ) {
 			$wsds_classes[] = 'woocommerce woocommerce-page';
 		}
@@ -18,7 +16,7 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 
 	public function __construct() {
 		
-		$widget_ops = array( 
+		$widget_ops = array(
 		'classname' => 'woocommerce_sale_discount_products',
 		'description' => 'A Widget to display woocommerce products list are on sale discount and future sale discount.',
 		);
@@ -30,7 +28,7 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 	public function widget( $args, $instance ) {
 			extract( $args );
 			$wsds_title = apply_filters('widget_title', $instance['wsds_title']);
-			$wsds_limit = $instance['wsds_limit'];
+			$wsds_limit = (isset($instance['wsds_limit']) && $instance['wsds_limit'] > 0) ? $instance['wsds_limit']: -1;
 			$wsds_on_sale=$instance[ 'wsds_on_sale' ] ? 'true' : 'false';
 			$wsds_future_sale=$instance[ 'wsds_future_sale' ] ? 'true' : 'false';
 			$flag="";
@@ -91,7 +89,6 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 											
 									);
 							}
-							//print_r($args);
 							
 							$loop = new WP_Query( $args );
 							if ( $loop->have_posts() ) {
@@ -99,7 +96,7 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 							 <ul class ="products columns-1"><?php
 								while ( $loop->have_posts() ) : $loop->the_post();
 									
-									woocommerce_get_template_part( 'content', 'product' );
+									wc_get_template_part( 'content', 'product' );
 									
 								endwhile;
 								?> </ul><?php
@@ -121,22 +118,26 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 				<label for="<?php echo $this->get_field_id('wsds_title'); ?>"><?php _e('Title:'); ?> 
 					<input class="wsds_widget_title" id="<?php echo $this->get_field_id('wsds_title'); ?>" name="<?php echo $this->get_field_name('wsds_title'); ?>" type="text" value="<?php echo $wsds_title; ?>" />
 				</label>
+				<span class="wsds_note">Add text to show as widget title.</span>
 			</p>
      		<p>
 				<label for="<?php echo $this->get_field_id('wsds_limit'); ?>"><?php _e('Limit:'); ?> 
 					<input class="wsds_widget_limit" id="<?php echo $this->get_field_id('wsds_limit'); ?>" name="<?php echo $this->get_field_name('wsds_limit'); ?>" type="number" value="<?php echo $wsds_limit; ?>" size="2" />
 				</label>
+				<span class="wsds_note">Set limit to display only number of products on widget. Default: No limit</span>
 			</p>
 			<p>
 				<input class="wsds_widget_on_sale" type="checkbox" <?php checked( $instance[ 'wsds_on_sale' ], 'on' ); ?> id="<?php echo $this->get_field_id( 'wsds_on_sale' ); ?>" name="<?php echo $this->get_field_name( 'wsds_on_sale' ); ?>" />
-				<label for="<?php echo $this->get_field_id('wsds_on_sale'); ?>"><?php _e('ON Sale'); ?> 
-				</label>
+				<label for="<?php echo $this->get_field_id('wsds_on_sale'); ?>"><?php _e('On Sale'); ?> 
+				</label><br>
+				<span class="wsds_note">Enable this to display "On Sale" products on widget.</span>
 			</p>
 			<p>
 				
 				<input class="wsds_widget_future_sale" type="checkbox" <?php checked( $instance[ 'wsds_future_sale' ], 'on' ); ?> id="<?php echo $this->get_field_id( 'wsds_future_sale' ); ?>" name="<?php echo $this->get_field_name( 'wsds_future_sale' ); ?>" />
 				<label for="<?php echo $this->get_field_id('wsds_future_sale'); ?>"><?php _e('Future Sale'); ?> 
-				</label>
+				</label><br>
+				<span class="wsds_note">Enable this to display "Future Sale" products on widget.</span>
 			</p>
         
 		<?php
