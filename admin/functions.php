@@ -47,4 +47,3 @@ function  failure_option_msg_wsds($msg)
 {
 	return '<div class="notice notice-error wsds-error-msg is-dismissible"><p>' . $msg . '</p></div>';
 }
-?>

@@ -1,21 +1,20 @@
- .wsds_options_panel input[type=text].wsds_st_date, .wsds_options_panel input[type=text].wsds_end_date
+.wsds_options_panel input[type=text].wsds_st_date, .wsds_options_panel input[type=text].wsds_end_date
 {
 width: 200px;	
 }
 .wsds_options_panel .wsds_options_group p input[type=text]{
-   width: auto; 
-   margin: 2px;
-  
+   width: auto;
+   margin: 2px 2px 2px 0;
 }
 .wsds_options_panel span{
 	float: left;
-	margin-left: 3px; 
+	margin-left: 3px;
 	margin-right: 3px;
 }
 .wsds_show_countdown input[type="checkbox"] {
     float: left;
-    margin-left: 3px;
     margin-right: 3px;
+    margin-top: 3px !important;
 }
 p.form-field.wsds_note {
     color: red;
@@ -32,4 +31,7 @@ li.wsds-schedule-sale-tab_tab a::before {
 }
 .wsds_widget_limit{
 	width: 45px;
+}
+.wsds_show_countdown .wsds_note {
+    margin-left: 0;
 }
