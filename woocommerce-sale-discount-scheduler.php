@@ -3,14 +3,15 @@
 Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
-Version: 1.8
-WC tested up to: 8.5.1
+Version: 1.9
+WC tested up to: 8.6.1
 Author URI: https://geekcodelab.com/
+Text Domain: woocommerce-sale-discount-scheduler
 */
 
 if(!defined('ABSPATH')) exit;
 
-define("WSDS_BUILD",1.8);
+define("WSDS_BUILD",1.9);
 
 if(!defined("WSDS_PLUGIN_DIR_PATH"))
 	
@@ -19,58 +20,62 @@ if(!defined("WSDS_PLUGIN_DIR_PATH"))
 if(!defined("WSDS_PLUGIN_URL"))
 	
 	define("WSDS_PLUGIN_URL",plugins_url().'/'.basename(dirname(__FILE__)));
+
+/**
+ * Trigger an admin notice if WooCommerce is not installed.
+ */
+if ( ! function_exists( 'wsds_install_woocommerce_admin_notice' ) ) {
+	function wsds_install_woocommerce_admin_notice() {
+		?>
+		<div class="error">
+			<p>
+				<?php
+				echo esc_html__( sprintf( '%s is enabled but not effective. It requires WooCommerce in order to work.', 'Woocommerce Sale Discount Scheduler' ), 'woocommerce-sale-discount-scheduler' );
+				?>
+			</p>
+		</div>
+		<?php
+	}
+}
+
+function wsds_woocommerce_constructor() {
+    // Check WooCommerce installation
+	if ( ! function_exists( 'WC' ) ) {
+		add_action( 'admin_notices', 'wsds_install_woocommerce_admin_notice' );
+		return;
+	}
+
+}
+add_action( 'plugins_loaded', 'wsds_woocommerce_constructor' );
 	
-require_once( WSDS_PLUGIN_DIR_PATH .'functions.php');
+require_once( WSDS_PLUGIN_DIR_PATH .'admin/functions.php');
+require_once( WSDS_PLUGIN_DIR_PATH .'tools/shortcodes.php');
+require_once( WSDS_PLUGIN_DIR_PATH .'tools/widgets.php');
 
-require_once( WSDS_PLUGIN_DIR_PATH .'shortcodes.php');
-
-require_once( WSDS_PLUGIN_DIR_PATH .'widgets.php');
-
-add_action('admin_enqueue_scripts','wsds_enqueue_styles');
-
-function wsds_enqueue_styles(){
-	
-	wp_enqueue_style("wsds-admin-style.css",WSDS_PLUGIN_URL."/assets/css/wsds-style.css",array(),WSDS_BUILD);
+/** Enqueue scripts */
+add_action( 'admin_enqueue_scripts', 'wsds_enqueue_styles');
+add_action( 'wp_enqueue_scripts', 'wsds_front_style_include' );
+function wsds_enqueue_styles() {
+	wp_enqueue_style( "wsds-admin-style.css", WSDS_PLUGIN_URL . "/assets/css/admin-style.css", array(), WSDS_BUILD );
 }
 function wsds_front_style_include() {
-	
-   wp_enqueue_style("wsds-front-style.css",WSDS_PLUGIN_URL."/assets/css/wsds-front-style.css",array(),WSDS_BUILD);
+   wp_enqueue_style( "wsds-front-style.css", WSDS_PLUGIN_URL . "/assets/css/front-style.css", array(), WSDS_BUILD );
 }
 
-add_action( 'wp_enqueue_scripts', 'wsds_front_style_include' );
-
+/** Add options for administrator user */
 add_action('admin_init', 'wsds_manage_scheduler');
-
-register_activation_hook( __FILE__, 'wsds_plugin_active' );
-
-function wsds_plugin_active(){
-	
-	$error='required <b>woocommerce</b> plugin.';	
-	if ( !class_exists( 'WooCommerce' ) ) {
-		
-	   die('Plugin NOT activated: ' . $error);
-	   
-	}
-} 
 function wsds_manage_scheduler() {
-	
     if ( is_admin() ) {
-		
 		$current_roles=wp_get_current_user()->roles;
-		
-		if(in_array("administrator",$current_roles))
-		{
-
-			include( WSDS_PLUGIN_DIR_PATH .'options.php');	
-
+		if(in_array("administrator",$current_roles)) {
+			include( WSDS_PLUGIN_DIR_PATH .'admin/options.php');	
 		}       
     }
 }
 
+/** Add action for start time and end time update post meta  */
 add_action('wsds_start_shedule_sale_discount','wsds_start_schedule_sale_discount_event');
-
 add_action('wsds_end_shedule_sale_discount','wsds_end_schedule_sale_discount_event');
-
 function wsds_start_schedule_sale_discount_event($post_id)
 {	
 	$status=get_post_meta($post_id,'wsds_schedule_sale_status',true);
@@ -86,7 +91,12 @@ function wsds_end_schedule_sale_discount_event($post_id)
 		update_post_meta($post_id,'wsds_schedule_sale_status',0);	
 	}
 }
+
+/** Update product price with discount during scheduled time  */
+add_filter('woocommerce_product_get_price', 'wsds_return_price', PHP_INT_MAX, 2);
 function wsds_return_price($price, $product) {
+	if(is_admin())	return $price;
+
     global $post, $blog_id;
     $product_id = $product->get_id();
 	if(!is_object($post))
@@ -102,13 +112,13 @@ function wsds_return_price($price, $product) {
 		if($discount_type=="Percentage") {
 			$price = $price[0]-($price[0]*$sale_price)/100;			
 		}else{
-			// $price = $price[0]-$sale_price;
 			$price = ($price[0] - $sale_price);
 		}
 	}
 	return $price;
 }
-add_filter('woocommerce_product_get_price', 'wsds_return_price', PHP_INT_MAX, 2);
+
+/** Get scheduled discount price */
 function wsds_get_discount_price() {
 	$price = "";
     global $post, $blog_id;
@@ -118,22 +128,18 @@ function wsds_get_discount_price() {
 	$sale_price=get_post_meta($post->ID,'wsds_schedule_sale_sale_price',true);
 	if (in_array($product->get_id(), $product_ids))
 	{
-			$post_id = $post->ID;
-			$price = get_post_meta($post->ID, '_regular_price');
-
-				if($discount_type=="Percentage")
-				{
-					$price = $price[0]-($price[0]*$sale_price)/100;
-					
-				}
-				else
-				{
-					$price = $price[0]-$sale_price;
-					
-				}
+		$post_id = $post->ID;
+		$price = get_post_meta($post->ID, '_regular_price');
+		if($discount_type=="Percentage") {
+			$price = $price[0]-($price[0]*$sale_price)/100;
+		}else{
+			$price = $price[0]-$sale_price;
+		}
 	}
 	return $price;
 }
+
+/** Shop loop - Add start countdown to scheduled price products */
 add_action( 'woocommerce_after_shop_loop_item', 'wsds_shop_sale_start_countdown', 5 );
 function wsds_shop_sale_start_countdown() {
 	global $product;	
@@ -165,26 +171,24 @@ function wsds_shop_sale_start_countdown() {
 			$d = floor($h / 24);
 			$h = $h % 24;
 			$display_msg='';
-			if($sale_price<0)
-			{
+			if($sale_price<0) {
 				$display_msg='<b>Discount Not Applied: Set Regular Price greater than discount price </b>';
 				$last_msg='';
-			}
-			else
-			{
+			}else{
 				$display_msg='This product will be sale in ';
 				$last_msg='after';
 			}
-			if ($time_diffrent > 0)
-			{
+
+			if ($time_diffrent > 0) {
 				echo '<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_shop">
-				
 				<span>'.$display_msg.''.$currency_symbol.''.$sale_price.' '.$last_msg.'</span>
 				<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
 			}
 		}
 	}
 }
+
+/** Shop loop - Add ongoing countdown to scheduled price products */
 add_action( 'woocommerce_after_shop_loop_item', 'wsds_shop_sale_ongoing_countdown', 5 );
 function wsds_shop_sale_ongoing_countdown() {
 	global $product;	
@@ -225,8 +229,9 @@ function wsds_shop_sale_ongoing_countdown() {
 		}
 	}
 }
-add_action( 'woocommerce_single_product_summary', 'wsds_sale_start_countdown', 30 ); 
 
+/** Single product - Add sale start countdown to scheduled price products */
+add_action( 'woocommerce_single_product_summary', 'wsds_sale_start_countdown', 30 ); 
 function wsds_sale_start_countdown() {
 	global $product;
 	global  $woocommerce;
@@ -312,9 +317,9 @@ function wsds_sale_start_countdown() {
 	}
 	
 }
-add_action( 'woocommerce_single_product_summary', 'wsds_schedule_sale_ongoing_countdown', 30 );
 
- 
+/** Single product - Add sale ongoing countdown to scheduled price products */
+add_action( 'woocommerce_single_product_summary', 'wsds_schedule_sale_ongoing_countdown', 30 );
 function wsds_schedule_sale_ongoing_countdown() {
 	global $product;
 	global  $woocommerce;
@@ -391,6 +396,7 @@ function wsds_schedule_sale_ongoing_countdown() {
 	}
 }
 
+/** Admin script for date picker - Start time and End time field script */
 add_action('admin_footer', 'wsds_schedule_sale_discount_admin_footer_function');
 function wsds_schedule_sale_discount_admin_footer_function() {
 	$screen = get_current_screen();
@@ -409,6 +415,8 @@ function wsds_schedule_sale_discount_admin_footer_function() {
 		}
 	}
 }
+
+/** Countdown script for scheduled product prices */
 add_action('wp_footer', 'wsds_schedule_sale_discount_front_footer_function');
 function wsds_schedule_sale_discount_front_footer_function() {
 	?>
@@ -423,10 +431,11 @@ function wsds_schedule_sale_discount_front_footer_function() {
 				var remain_start_time = start_time - now_timestamp;
 				if (remain_start_time > 0) {
 					jQuery('#wsds_countdown_start_' + product_id + ' ul').html(wsds_convertMS(remain_start_time + '000'));
-					
 				} else {
 					clearInterval(interval1);
-					document.location.reload(true);
+					setTimeout(() => {
+						document.location.reload();
+					}, 1000);
 				}
 			}, 1000);
 			
@@ -442,10 +451,11 @@ function wsds_schedule_sale_discount_front_footer_function() {
 				var remain_end_time = end_time - now_timestamp;
 				if (remain_end_time > 0) {
 					jQuery('#wsds_countdown_end_' + product_id + ' ul').html(wsds_convertMS(remain_end_time + '000'));
-					
 				} else {
 					clearInterval(interval2);
-					document.location.reload();
+					setTimeout(() => {
+						document.location.reload();
+					}, 1000);
 					
 				}
 			}, 1000);
@@ -460,12 +470,13 @@ function wsds_schedule_sale_discount_front_footer_function() {
 			m = m % 60;
 			d = Math.floor(h / 24);
 			h = h % 24;
-			// return { d: d, h: h, m: m, s: s };
+
 			var html = '<li><div><span class="wsds_count_digit">' + d + '</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">' + h + '</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">' + m + '</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">' + s + '</span><span class="wsds_count_lable">Sec</span></div></li>'
 			return html;
 		};
 	</script>
 <?php }
+
 /**
  * Added HPOS support for woocommerce
  */
