@@ -1,15 +1,14 @@
 === Woocommerce Sale Discount Scheduler ===
 Contributors: rajkakadiya, rvadhel
 Donate link: https://paypal.me/rvadhel
-Tags:pre schedule sale discount countdown, on schedule sale discount countdown, disable and enable schedule sale discount, discount per hours, discount occasionally, expiring product discount datetime, expiring product discount, product discount scheduler, product discount schedule timer
+Tags: schedule discount, upcoming discount, discount occasionally, product discount schedule timer
 Requires PHP: 7.4
 Requires at least: 6.4
 Tested up to: 6.4.2
 WC tested up to: 8.6.1
 Stable tag: 1.9
 
-This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
-You will have the flexibility to choose Date and time range when your products will be available with some lucrative discount to your customers for purchasing, automatically hiding/showing the “schedule discount price” on shop, category and product pages, showing a countdown timer. 
+This Plugin provide you options to schedule the discount throughout seasonally and occasionally of all your woocommerce products
 
 == Description ==
 
