@@ -1,8 +1,9 @@
 .wsds_coundown_shop ul
 {
 	 list-style-type: none;
-    margin-bottom: 5px;
-    max-width: 250px;
+	 margin: 0 0 5px 0;
+	 max-width: 250px;
+	 padding: 0 5px;
 }
 .wsds_coundown_single ul{
     list-style-type: none;
@@ -89,8 +90,7 @@
     font-size: 14px;
 }
 .wsds_coundown_shop {
-    padding: 0 5px;
-	display: grid;
+    display: grid;
 }
 .wsds_coundown_single
 {
