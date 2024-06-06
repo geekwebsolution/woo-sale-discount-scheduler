@@ -70,13 +70,16 @@ After Plugin Active go to Products-> Add new -> Schedule Sale Discount(tab).
 
 == Screenshots ==
 1. Add product page -> Schedule Sale Discount
-2. Variable Product -> Set Schedule Discount
-3. Schedule Sale Discount -> Status
-4. Schedule Sale Discount -> Set Schedule Time
-5. Schedule Sale Discount -> Set Discount Type
-6. Schedule Sale Discount -> Set Discount Sale Price
-7. Schedule Sale Discount -> Set CountDown
-8. Variable Product -> Sale Start Countdown Preview
+2. Schedule Sale Discount -> Status
+3. Schedule Sale Discount -> Set Schedule Time
+4. Schedule Sale Discount -> Set Discount Type
+5. Schedule Sale Discount -> Set Discount Sale Price
+6. Schedule Sale Discount -> Set CountDown
+7. Schedule Sale Discount -> Set On Sale CountDown 
+8. Variable Product -> Set Schedule Discount
+9. Variable Product -> Sale Start Countdown Preview
+10. Shortcode for Schedule Sale Discount Products
+11. Widget for Schedule Sale Discount Products
 
 == Changelog ==
 = 1.9.1 =
