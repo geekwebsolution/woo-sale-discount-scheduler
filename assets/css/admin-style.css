@@ -69,5 +69,5 @@ li.wsds-schedule-sale-tab_tab a::before {
     width: 400px;
 }
 .wsds-label p:not(:first-child) {
-    margin: 0;
+    margin: 5px 0 5px 0;
 }

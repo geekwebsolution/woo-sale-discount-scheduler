@@ -3,7 +3,7 @@
 Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
-Version: 1.9
+Version: 1.9.1
 WC tested up to: 8.9.0
 Requires Plugins: woocommerce
 Author URI: https://geekcodelab.com/
@@ -12,7 +12,7 @@ Text Domain: woocommerce-sale-discount-scheduler
 
 if(!defined('ABSPATH')) exit;
 
-define("WSDS_BUILD",1.9);
+define("WSDS_BUILD","1.9.1");
 
 if(!defined("WSDS_PLUGIN_DIR_PATH"))
 	
@@ -21,6 +21,18 @@ if(!defined("WSDS_PLUGIN_DIR_PATH"))
 if(!defined("WSDS_PLUGIN_URL"))
 	
 	define("WSDS_PLUGIN_URL",plugins_url().'/'.basename(dirname(__FILE__)));
+
+/** Set Plugin Seeting and Support Option Start */
+$plugin_name = plugin_basename( __FILE__ );
+add_filter( "plugin_action_links_$plugin_name", 'wsds_plugin_add_settings_link');
+function wsds_plugin_add_settings_link( $links ) {
+	$support_link = '<a href="https://geekcodelab.com/contact/"  target="_blank" >' . __( 'Support', 'woo-donations-pro' ) . '</a>'; 
+	array_unshift( $links, $support_link );
+
+	$settings_link = '<a href="admin.php?page=wsds-settings">' . __( 'Settings', 'woo-donations-pro' ) . '</a>'; 
+	array_unshift( $links, $settings_link );	
+	return $links;	
+}
 	
 require_once( WSDS_PLUGIN_DIR_PATH .'admin/functions.php');
 require_once( WSDS_PLUGIN_DIR_PATH .'tools/shortcodes.php');
@@ -107,18 +119,18 @@ function wsds_end_schedule_sale_discount_event($post_id)
 add_filter('woocommerce_product_variation_get_price', 'wsds_return_price', 99, 2);
 add_filter('woocommerce_product_get_price', 'wsds_return_price', 99, 2);
 function wsds_return_price($price, $product) {
-	// if(is_admin())	return $price;
-
+	if(is_admin())  return $price;
     $product_id = $product->get_id();
 	$schedule_sale_status=get_post_meta($product_id,'wsds_schedule_sale_status',true); 
-	if (isset($schedule_sale_status) && $schedule_sale_status == 1) {
+	$discount_type=get_post_meta($product_id,'wsds_schedule_sale_discount_type',true);
+	$sale_price=get_post_meta($product_id,'wsds_schedule_sale_sale_price',true);
+	if (isset($schedule_sale_status) && $schedule_sale_status == 1 && isset($sale_price) && !empty($sale_price)) {
 
 		$start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);
 		$end_time=get_post_meta($product_id,'wsds_schedule_sale_end_time',true); 
 
 		if($start_time < time() && $end_time > time()) {
-			$discount_type=get_post_meta($product_id,'wsds_schedule_sale_discount_type',true);
-			$sale_price=get_post_meta($product_id,'wsds_schedule_sale_sale_price',true);
+			
 
 			$meta_price = get_post_meta($product_id, '_regular_price');
 
@@ -135,13 +147,10 @@ function wsds_return_price($price, $product) {
 /** Get scheduled discount price */
 function wsds_get_discount_price($product_id) {
 	$price = "";
-	// global $product;
-	// $product_id = $product->get_id();
 	$schedule_sale_status=get_post_meta($product_id,'wsds_schedule_sale_status',true); 
-	if (isset($schedule_sale_status) && $schedule_sale_status == 1) {
-
-		$discount_type=get_post_meta($product_id,'wsds_schedule_sale_discount_type',true);
-		$sale_price=get_post_meta($product_id,'wsds_schedule_sale_sale_price',true);
+	$sale_price=get_post_meta($product_id,'wsds_schedule_sale_sale_price',true);
+	$discount_type=get_post_meta($product_id,'wsds_schedule_sale_discount_type',true);
+	if (isset($schedule_sale_status) && $schedule_sale_status == 1 && isset($sale_price) && !empty($sale_price)) {
 
 		$meta_price = get_post_meta($product_id, '_regular_price');
 		if($discount_type=="Percentage") {
@@ -172,11 +181,10 @@ function wsds_shop_start_countdown($product_id) {
 
 	if(!empty($countdown) && $wsds_shop_loop_countdown == 'on') {
 		$wsds_options = get_option('wsds_options');
-		$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : __('This product will be on sale for {wsds_sale_price} after the following timer:','woocommerce-sale-discount-scheduler');
+		$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : __('This product will be on sale for {wsds_sale_price} after the following timer','woocommerce-sale-discount-scheduler');
 		$discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'])) ? $wsds_options['discount_not_applied_label'] : __('Discount Not Applied: Set Regular Price greater than discount price','woocommerce-sale-discount-scheduler');
 		
 		$start_time = get_post_meta($product_id,'wsds_schedule_sale_st_time',true);
-
 		$time_diffrent=$start_time-time();
 		$s = $time_diffrent;
 		$m = floor($s / 60);
@@ -193,9 +201,13 @@ function wsds_shop_start_countdown($product_id) {
 		}
 
 		if ($time_diffrent > 0) {
+			$day_label = __('Days','woocommerce-sale-discount-scheduler');
+			$hour_label = __('Hours','woocommerce-sale-discount-scheduler');
+			$minutes_label = __('Minutes','woocommerce-sale-discount-scheduler');
+			$seconds_label = __('Seconds','woocommerce-sale-discount-scheduler');
 			$start_countdown_html .= '<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_shop">
 			<span>'.$display_msg.'</span>
-			<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+			<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">'.$day_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">'.$hour_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">'.$minutes_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">'.$seconds_label.'</span></div></li></ul></div>';
 		}
 	}
 
@@ -243,13 +255,17 @@ function wsds_shop_ongoing_countdown_html($product_id) {
 			$h = $h % 24;
 
 			$wsds_options = get_option('wsds_options');
-			$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : __("Don't miss out! Sale ends after following timer:","woocommerce-sale-discount-scheduler");
+			$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : __("Don't miss out! Sale ends after following timer","woocommerce-sale-discount-scheduler");
 			
 			if ($time_diffrent > 0)
 			{
+				$day_label = __('Days','woocommerce-sale-discount-scheduler');
+				$hour_label = __('Hours','woocommerce-sale-discount-scheduler');
+				$minutes_label = __('Minutes','woocommerce-sale-discount-scheduler');
+				$seconds_label = __('Seconds','woocommerce-sale-discount-scheduler');
 				$ongoing_countdown_html .= '<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_shop">
 				<span>'.$sale_end_label.'</span>
-				<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">Days</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">Hours</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">Min</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">Sec</span></div></li></ul></div>';
+				<ul><li><div><span class="wsds_count_digit">'.$d.'</span><span class="wsds_count_lable">'.$day_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$h.'</span><span class="wsds_count_lable">'.$hour_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$m.'</span><span class="wsds_count_lable">'.$minutes_label.'</span></div></li><li><div><span class="wsds_count_digit">'.$s.'</span><span class="wsds_count_lable">'.$seconds_label.'</span></div></li></ul></div>';
 			}
 		}
 	}
@@ -288,7 +304,7 @@ function wsds_sale_start_countdown() {
 
 		if(!empty($countdown) && $wsds_single_product_countdown == 'on') {
 			$wsds_options = get_option('wsds_options');
-			$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : __('This product will be on sale for {wsds_sale_price} after the following timer:','woocommerce-sale-discount-scheduler');
+			$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : __('This product will be on sale for {wsds_sale_price} after the following timer','woocommerce-sale-discount-scheduler');
 			$discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'])) ? $wsds_options['discount_not_applied_label'] : __('Discount Not Applied: Set Regular Price greater than discount price','woocommerce-sale-discount-scheduler');
 
 			$start_time=get_post_meta($product_id,'wsds_schedule_sale_st_time',true);
@@ -306,7 +322,7 @@ function wsds_sale_start_countdown() {
 				$display_msg = str_replace('{wsds_sale_price}',$currency_symbol.$sale_price,$sale_start_label);
 			}
 			if ($time_diffrent > 0)
-			{	
+			{
 				echo '
 				<div id="wsds_countdown_start_'.$product_id.'" data-product="'.$product_id.'" data-start="'.$start_time.'" class="wsds_countdown_start wsds_coundown_single">
 					
@@ -384,7 +400,7 @@ function wsds_schedule_sale_ongoing_countdown() {
 			if ($time_diffrent > 0)
 			{
 				$wsds_options = get_option('wsds_options');
-				$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : __("Don't miss out! Sale ends after following timer:","woocommerce-sale-discount-scheduler");
+				$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : __("Don't miss out! Sale ends after following timer","woocommerce-sale-discount-scheduler");
 
 				echo '
 				<div id="wsds_countdown_end_'.$product_id.'" data-product="'.$product_id.'" data-end="'.$end_time.'" class="wsds_countdown_end wsds_coundown_single">
@@ -435,7 +451,7 @@ function wsds_schedule_sale_discount_admin_footer_function() {
 	$screen = get_current_screen();
 	if(isset($screen) && !empty($screen)){
 		if(isset($screen->post_type)){
-			if($screen->post_type == 'product') { 
+			if($screen->post_type == 'product') {
 				?>
 				<script>
 					jQuery(document).ready(function () {

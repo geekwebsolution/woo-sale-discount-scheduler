@@ -39,38 +39,36 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
 		if($wsds_on_sale=='true' && $wsds_future_sale=='true')	$flag_all = 1;
 		if($flag_all == 1) {
 			$args = array(
-				'post_type'      => 'product',
-				'posts_per_page'=> $wsds_limit,
-				'meta_query' => 
+			 'post_type'      => 'product',
+			 'posts_per_page'=> $wsds_limit,
+			 'meta_query' => 
+				array(
+					'relation' => 'AND',
 					array(
-							'relation' => 'AND',
-							array(
-								'key'     => 'wsds_schedule_sale_status',
-								'value'   => 1,
-								'compare' => '=',
-							),
-							
-					)
+						'key'     => 'wsds_schedule_sale_status',
+						'value'   => 1,
+						'compare' => '=',
+					),
+				)
 			);
 		}else{
 			$args = array(
-				'post_type'      => 'product',
-				'posts_per_page'=> $wsds_limit,
-				'meta_query' => 
-						array(
-								'relation' => 'AND',
-								array(
-									'key'     => 'wsds_schedule_sale_status',
-									'value'   => 1,
-									'compare' => '=',
-								),
-								array(
-									'key'     => 'wsds_schedule_sale_mode',
-									'value'   => $flag,
-									'compare' => '=',		
-								),
-					
+			 'post_type'      => 'product',
+			 'posts_per_page'=> $wsds_limit,
+			 'meta_query' => 
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => 'wsds_schedule_sale_status',
+						'value'   => 1,
+						'compare' => '=',
 					),
+					array(
+						'key'     => 'wsds_schedule_sale_mode',
+						'value'   => $flag,
+						'compare' => '=',		
+					),
+				),
 			);
 		}
 		
@@ -94,29 +92,29 @@ class Woocommerce_Sale_Discount_Products extends WP_Widget {
         $wsds_on_sale = (isset($instance['wsds_on_sale'])) ? esc_attr($instance['wsds_on_sale']) : '';
         $wsds_future_sale = (isset($instance['wsds_future_sale'])) ? esc_attr($instance['wsds_future_sale']) : ''; ?>
             <p>
-				<label for="<?php echo $this->get_field_id('wsds_title'); ?>"><?php _e('Title:'); ?> 
+				<label for="<?php echo $this->get_field_id('wsds_title'); ?>"><?php esc_html_e('Title:','woocommerce-sale-discount-scheduler'); ?> 
 					<input class="wsds_widget_title" id="<?php echo $this->get_field_id('wsds_title'); ?>" name="<?php echo $this->get_field_name('wsds_title'); ?>" type="text" value="<?php echo $wsds_title; ?>" />
 				</label>
-				<span class="wsds_note"><?php _e('Add text to show as widget title.','woocommerce-sale-discount-scheduler'); ?></span>
+				<span class="wsds_note"><?php esc_html_e('Add text to show as widget title.','woocommerce-sale-discount-scheduler'); ?></span>
 			</p>
      		<p>
-				<label for="<?php echo $this->get_field_id('wsds_limit'); ?>"><?php _e('Limit:'); ?> 
+				<label for="<?php echo $this->get_field_id('wsds_limit'); ?>"><?php esc_html_e('Limit:','woocommerce-sale-discount-scheduler'); ?> 
 					<input class="wsds_widget_limit" id="<?php echo $this->get_field_id('wsds_limit'); ?>" name="<?php echo $this->get_field_name('wsds_limit'); ?>" type="number" value="<?php echo $wsds_limit; ?>" size="2" />
 				</label>
-				<span class="wsds_note"><?php _e('Set limit to display only number of products on widget. Default: No limit','woocommerce-sale-discount-scheduler'); ?></span>
+				<span class="wsds_note"><?php esc_html_e('Set limit to display only number of products on widget. Default: No limit','woocommerce-sale-discount-scheduler'); ?></span>
 			</p>
 			<p>
 				<input class="wsds_widget_on_sale" type="checkbox" <?php checked( $wsds_on_sale, 'on' ); ?> id="<?php echo $this->get_field_id( 'wsds_on_sale' ); ?>" name="<?php echo $this->get_field_name( 'wsds_on_sale' ); ?>" />
-				<label for="<?php echo $this->get_field_id('wsds_on_sale'); ?>"><?php _e('On Sale'); ?> 
+				<label for="<?php echo $this->get_field_id('wsds_on_sale'); ?>"><?php esc_html_e('On Sale','woocommerce-sale-discount-scheduler'); ?> 
 				</label><br>
-				<span class="wsds_note"><?php _e('Enable this to display "On Sale" products on widget.','woocommerce-sale-discount-scheduler'); ?></span>
+				<span class="wsds_note"><?php esc_html_e('Enable this to display "On Sale" products on widget.','woocommerce-sale-discount-scheduler'); ?></span>
 			</p>
 			<p>
 				
 				<input class="wsds_widget_future_sale" type="checkbox" <?php checked( $wsds_future_sale, 'on' ); ?> id="<?php echo $this->get_field_id( 'wsds_future_sale' ); ?>" name="<?php echo $this->get_field_name( 'wsds_future_sale' ); ?>" />
-				<label for="<?php echo $this->get_field_id('wsds_future_sale'); ?>"><?php _e('Future Sale'); ?> 
+				<label for="<?php echo $this->get_field_id('wsds_future_sale'); ?>"><?php esc_html_e('Future Sale','woocommerce-sale-discount-scheduler'); ?> 
 				</label><br>
-				<span class="wsds_note"><?php _e('Enable this to display "Future Sale" products on widget.','woocommerce-sale-discount-scheduler'); ?></span>
+				<span class="wsds_note"><?php esc_html_e('Enable this to display "Future Sale" products on widget.','woocommerce-sale-discount-scheduler'); ?></span>
 			</p>
         
 		<?php

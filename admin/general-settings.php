@@ -1,10 +1,10 @@
 <?php
 $wsds_options = get_option('wsds_options');
 
-$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : '';
-$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : '';
+$sale_start_label  = (isset($wsds_options['sale_start_label'])) ? $wsds_options['sale_start_label'] : __('This product will be on sale for {wsds_sale_price} after the following timer','woocommerce-sale-discount-scheduler');
+$sale_end_label  = (isset($wsds_options['sale_end_label'])) ? $wsds_options['sale_end_label'] : __("Don't miss out! Sale ends after following timer","woocommerce-sale-discount-scheduler");
+$discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'])) ? $wsds_options['discount_not_applied_label'] : __('Discount Not Applied: Set Regular Price greater than discount price','woocommerce-sale-discount-scheduler');
 $wrapper_class  = (isset($wsds_options['wrapper_class'])) ? $wsds_options['wrapper_class'] : '';
-$discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'])) ? $wsds_options['discount_not_applied_label'] : '';
 ?>
     <div class="wrap">
         <h2><?php _e('Woocommerce Sale Discount Scheduler Settings', 'woocommerce-sale-discount-scheduler'); ?></h2>
@@ -19,7 +19,8 @@ $discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'
                 </div>
                 <div class="wsds-label">
                     <input type="text" placeholder="" name="wsds_options[sale_start_label]" value="<?php _e($sale_start_label); ?>">
-                    <p><?php echo wp_kses( __( "<i>This option helps to change the text <b>This product will be on sale for <code>{wsds_sale_price}</code> after the following timer:</b>. Where <code>{wsds_sale_price}</code> is scheduled sale price.</i>", "woocommerce-sale-discount-scheduler" ), array( 'code' => array(), 'i' => array(), 'b' => array() ) ); ?></p>
+                    <p><?php echo wp_kses( __( "<i>Default text: <b>This product will be on sale for <code>{wsds_sale_price}</code> after the following timer</b></i>", "woocommerce-sale-discount-scheduler" ), array( 'code' => array(), 'i' => array(), 'b' => array() ) ); ?></p>
+                    <p><?php echo wp_kses( __( "<i>Note: To display scheduled sale price use <code>{wsds_sale_price}</code> tag.</i>", "woocommerce-sale-discount-scheduler" ), array( 'code' => array(), 'i' => array(), 'b' => array() ) ); ?></p>
                 </div>
             </div>
 
@@ -29,7 +30,7 @@ $discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'
                 </div>
                 <div class="wsds-label">
                     <input type="text" placeholder="" name="wsds_options[sale_end_label]" value="<?php _e($sale_end_label); ?>">
-                    <p><?php echo wp_kses( __( "<i>This option helps to change the text <b>Don't miss out! Sale ends after following timer:</b></i>", "woocommerce-sale-discount-scheduler" ), array( 'i' => array(), 'b' => array() ) ); ?></p>
+                    <p><?php echo wp_kses( __( "<i>Default text: <b>Don't miss out! Sale ends after following timer</b></i>", "woocommerce-sale-discount-scheduler" ), array( 'i' => array(), 'b' => array() ) ); ?></p>
                 </div>
             </div>
 
@@ -39,7 +40,7 @@ $discount_not_applied_label  = (isset($wsds_options['discount_not_applied_label'
                 </div>
                 <div class="wsds-label">
                     <input type="text" placeholder="" name="wsds_options[discount_not_applied_label]" value="<?php _e($discount_not_applied_label); ?>">
-                    <p><?php echo wp_kses( __( "<i>This option helps to change the text <b>Discount Not Applied: Set Regular Price greater than discount price</b></i>", "woocommerce-sale-discount-scheduler" ), array( 'i' => array(), 'b' => array() ) ); ?></p>
+                    <p><?php echo wp_kses( __( "<i>Default text: <b>Discount Not Applied: Set Regular Price greater than discount price</b></i>", "woocommerce-sale-discount-scheduler" ), array( 'i' => array(), 'b' => array() ) ); ?></p>
                 </div>
             </div>
 

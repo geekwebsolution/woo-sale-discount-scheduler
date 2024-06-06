@@ -7,7 +7,7 @@ Requires at least: 6.0
 Tested up to: 6.5
 WC tested up to: 8.9.0
 Requires Plugins: woocommerce
-Stable tag: 1.9
+Stable tag: 1.9.1
 
 This Plugin provide you options to schedule the discount throughout seasonally and occasionally of all your woocommerce products
 
@@ -25,7 +25,6 @@ Woocommerce Sale Discount Scheduler plugin gives you option to display pre disco
 
 Woocommerce Sale Discount Scheduler plugin gives you the option to display on discount countdown timer that lets your customers know how much time misses to end purchasing with discount price time or to the expiration date and time. 
 
-
 == EXPIRING DATE TIME ==
 
 This Plugin you can set an expiring discount date time for every product. After this date time the product will be unavailable for purchasing with discount price . Optionally the product can be still setted as visbile with normal sale prices.
@@ -37,7 +36,7 @@ Also works with WordPress Multisite installs (each blog from the network has itâ
  
 * Set up Flash sales scheduled to start on a set date/time 
 * Create Seasonal offers scheduled to trigger on set dates 
-* Schedule the sales for each products 
+* Schedule the sales for simple / variable products 
 * Percentage and Fixed discount applied for each product on Regulare price 
 * Display next opening sale time 
 * Discount sale available per time range, per product 
@@ -63,7 +62,6 @@ Also works with WordPress Multisite installs (each blog from the network has itâ
 
 After Plugin Activation go to Appearance->Widgets->Woocommerce Sale Discount Products
 
-
 == Installation ==
 
 Extract the zip file and just drop the contents in the wp-content/plugins/ directory of your WordPress installation and then activate the Plugin from Plugins page.
@@ -78,9 +76,11 @@ After Plugin Active go to Products-> Add new -> Schedule Sale Discount(tab).
 5. Schedule Sale Discount -> Set Discount Sale Price
 6. Schedule Sale Discount -> Set CountDown
 
-
-
 == Changelog ==
+= 1.9.1 =
+ Added option to schedule variable products
+ Fixed translation strings and bugs
+
 = 1.9 =
  Fixed bugs.
 
