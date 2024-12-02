@@ -3,7 +3,7 @@
 Plugin Name: Woocommerce Sale Discount Scheduler
 Description: This Plugin provide you options to manage the discount throughout seasonally and occasionally of all your woocommerce products, scheduling discount throughout Any Date and Time.
 Author: Geek Code Lab
-Version: 1.9.1
+Version: 2.0.0
 WC tested up to: 8.9.0
 Requires Plugins: woocommerce
 Author URI: https://geekcodelab.com/
@@ -12,7 +12,7 @@ Text Domain: woocommerce-sale-discount-scheduler
 
 if(!defined('ABSPATH')) exit;
 
-define("WSDS_BUILD","1.9.1");
+define("WSDS_BUILD","2.0.0");
 
 if(!defined("WSDS_PLUGIN_DIR_PATH"))
 	
@@ -21,6 +21,9 @@ if(!defined("WSDS_PLUGIN_DIR_PATH"))
 if(!defined("WSDS_PLUGIN_URL"))
 	
 	define("WSDS_PLUGIN_URL",plugins_url().'/'.basename(dirname(__FILE__)));
+
+if (!defined("WSDS_PLUGIN_DIR")) define("WSDS_PLUGIN_DIR", plugin_basename(__DIR__));
+if (!defined("WSDS_PLUGIN_BASENAME")) define("WSDS_PLUGIN_BASENAME", plugin_basename(__FILE__));
 
 /** Set Plugin Seeting and Support Option Start */
 $plugin_name = plugin_basename( __FILE__ );
@@ -37,7 +40,11 @@ function wsds_plugin_add_settings_link( $links ) {
 require_once( WSDS_PLUGIN_DIR_PATH .'admin/functions.php');
 require_once( WSDS_PLUGIN_DIR_PATH .'tools/shortcodes.php');
 require_once( WSDS_PLUGIN_DIR_PATH .'tools/widgets.php');
+require(WSDS_PLUGIN_DIR_PATH . 'updater/updater.php');
 
+
+register_activation_hook(__FILE__, 'wsds_updater_activate');
+add_action('upgrader_process_complete', 'wsds_updater_activate'); // remove  transient  on plugin  update
 
 /** Enqueue scripts */
 add_action( 'admin_enqueue_scripts', 'wsds_enqueue_styles');

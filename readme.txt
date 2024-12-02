@@ -7,7 +7,7 @@ Requires at least: 6.0
 Tested up to: 6.5
 WC tested up to: 8.9.0
 Requires Plugins: woocommerce
-Stable tag: 1.9.1
+Stable tag: 2.0.0
 
 This Plugin provide you options to schedule the discount throughout seasonally and occasionally of all your woocommerce products
 
@@ -82,6 +82,11 @@ After Plugin Active go to Products-> Add new -> Schedule Sale Discount(tab).
 11. Widget for Schedule Sale Discount Products
 
 == Changelog ==
+
+= 2.0.0 =
+ Fix Bug
+ Added auto updated function
+
 = 1.9.1 =
  Added option to schedule variable products
  Fixed translation strings and bugs
